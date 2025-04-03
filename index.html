@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-time Chat</title>
+    <style>
+        ul { list-style-type: none; padding: 0; }
+        li { padding: 8px; margin-bottom: 4px; background-color: #f3f3f3; }
+        input[type="text"] { width: 300px; padding: 10px; }
+        button { padding: 10px; background-color: #4CAF50; color: white; border: none; cursor: pointer; }
+        #username-container { margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Real-time Chat Application</h1>
+
+    <!-- Username input section -->
+    <div id="username-container">
+        <label for="username">Enter your username: </label>
+        <input type="text" id="username" placeholder="Your username" />
+        <button onclick="setUsername()">Set Username</button>
+    </div>
+
+    <!-- Chat display and input -->
+    <ul id="messages"></ul>
+    <input id="m" autocomplete="off" disabled /><button onclick="sendMessage()" disabled>Send</button>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        var socket = io();
+        var username = null;
+
+        // Set username
+        function setUsername() {
+            username = document.getElementById('username').value;
+            if (username) {
+                socket.emit('set username', username);
+                document.getElementById('username-container').style.display = 'none'; // Hide username input
+                document.getElementById('m').disabled = false; // Enable message input
+                document.querySelector('button[onclick="sendMessage()"]').disabled = false; // Enable send button
+            } else {
+                alert('Please enter a username');
+            }
+        }
+
+        // Send message to server
+        function sendMessage() {
+            var message = document.getElementById('m').value;
+            socket.emit('chat message', message);
+            document.getElementById('m').value = ''; // Clear the input after sending
+        }
+
+        // Listen for chat messages from the server
+        socket.on('chat message', function(msg) {
+            var item = document.createElement('li');
+            item.textContent = msg;
+            document.getElementById('messages').appendChild(item);
+        });
+    </script>
+</body>
+</html>
